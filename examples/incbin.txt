@@ -1,0 +1,5 @@
+-- Increment function on LSF binary number.
+inc(Nil)        = Cons(B0,Nil)
+inc(Cons(B0,x)) = Cons(B1,x)
+inc(Cons(B1,x)) = Cons(B0,inc(x))
+

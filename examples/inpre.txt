@@ -1,0 +1,33 @@
+-- Current method cannot find the injectivity of inpre.
+-- 
+
+-- Given a tree with no duplicated elements, return its
+-- inorder and preorder traversals in a pair.
+
+inpre(BLeaf) = Pair(Nil, Nil)
+inpre(BNode(v,l,r)) = 
+  dappend(v, inpre(l), inpre(r))
+
+-- dappend (v, (li, lp), (ri, rp)) =
+--    (li ++ [v] ++ ri, v : lp ++ rp), if v not in lp.
+
+dappend(v, Pair(li, lp), Pair(ri, rp)) =
+  let Pair(v, Pair (i, p)) = dapp_body(v, Pair(li, lp), Pair(ri, rp)) 
+  in Pair(i, Cons(v, p))
+
+dapp_body(v, Pair(Nil, Nil), Pair(ri, rp)) =
+  Pair(v, Pair(Cons(v,ri), rp)) 
+dapp_body(v, Pair(Cons(x, li), Cons (y, lp)), Pair(ri, rp)) =
+  let Pair(v1,x1) = neq(v,x)
+  in let Pair(v2, Pair(i, p)) = dapp_body(v1, Pair(li, lp), Pair(ri, rp))
+     in Pair(v2, Pair(Cons(x1, i), Cons(y, p)))
+
+-- Reversible non-equality check.
+
+neq(Z, S(n)) = Pair(Z, S(n))
+neq(S(m), Z) = Pair(S(m), Z)
+neq(S(m), S(n)) = 
+  let Pair(m1,n1) = neq(m,n)
+  in Pair(S(m1), S(n1))
+
+-- inpre (BNode Z (BNode (S Z) BLeaf (BNode (S $ S Z) BLeaf BLeaf)) (BNode (S $ S $ S Z) BLeaf BLeaf))

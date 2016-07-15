@@ -1,0 +1,40 @@
+-- An tricky version of "inpre".
+-- For this version, the current method can find 
+-- its injectivity, while the derived inverse runs in O(n^2) time.
+
+
+inpre(x) = inprePrim(x,Nil)
+
+inprePrim(BLeaf,ys) = Pair(Nil,ys)
+inprePrim(BNode(v,l,r),ys2)
+   = let    Pair(rs,ys1)  = inprePrim(r,ys2)
+     in let Pair(ls,ys )  = inprePrim(l,ys1)
+     in let Pair3(xs,y,bs) = unSplitXs(ls,v,rs)
+     in let Pair(Cons(x2,xs2),y2) = isEquiv(xs,y,bs)
+     in Pair(Cons(x2,xs2), Cons(y2,ys))
+
+letUSX(Pair(xs2,bs),y) = 
+   Pair3(Cons(y,xs2), y,Cons(True,bs))
+unSplitXs(Nil,y,xs) =
+   letUSX( copyFalses(xs),y )  
+unSplitXs(Cons(x,l), z, r) =
+   let Pair3(xs,y,bs) = unSplitXs(l,z,r)
+   in  Pair3(Cons(x,xs),y,Cons(False,bs))
+
+copyFalses( Nil ) = Pair(Nil,Nil)
+copyFalses(Cons(x,xs)) =
+   let Pair(s,t) = copyFalses(xs)
+   in  Pair(Cons(x,s), Cons(False,t))
+
+isEquiv( Nil, y, Nil ) = Pair(Nil,y)
+isEquiv(Cons(x,xs), y, Cons(b,bs)) = 
+   let    Pair(x1,y1)  = checkEquiv(x,y,b) 
+   in let Pair(xs1,y2) = isEquiv(xs,y1,bs)
+   in Pair(Cons(x1,xs1), y2)
+
+checkEquiv(Z,Z,True)     = Pair(Z,Z)
+checkEquiv(S(x),Z,False) = Pair(S(x),Z)
+checkEquiv(Z,S(y),False) = Pair(Z,S(y))
+checkEquiv(S(x),S(y),b) =
+   let Pair(x1,y1) = checkEquiv(x,y,b)
+   in  Pair(S(x1),S(y1))			   

@@ -1,0 +1,32 @@
+-- reverse written in "There and Back Again" [1] style.
+-- 
+-- [1]: O. Danvy: "There and Back Again", ICFP 02.
+
+taba_reverse(x) = lettaba(h(idshape(x)))
+lettaba(Pair(Nil,x)) = x
+
+h(Pair(n,x)) = hImpl(n,x)
+
+hImpl(Z,   y) = Pair(y,Nil)
+hImpl(S(x),y) = lethImpl(hImpl(x,y))
+lethImpl(Pair(Cons(a,x),y)) = Pair(x,Cons(a,y))
+
+idshape(Nil)       = Pair(Z,Nil)
+idshape(Cons(a,x)) = letidshape(idshape(x),a)
+letidshape(Pair(n,x),a) = Pair(S(n), Cons(a,x))
+
+{-
+taba_reverse(x) = let ([],r) = rev(idshape(x)) 
+                  in r
+idshape([])  = (0,[])
+idshape(a:x) = let (n,y) = idshape(x) 
+               in  (n+1,a:y)
+rev(0,  y) = (y,[])
+rev(n+1,y) = let (a:x,r) = rev(n,y) 
+             in (x,a:r)
+-}
+
+
+-- The above code is a bit different from the natural TABA-style of reverse 
+-- because of the non-linearity of the natrual TABA-style reverse.
+

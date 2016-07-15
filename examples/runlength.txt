@@ -1,0 +1,37 @@
+-- Runlength Encoding 
+
+runlength(Nil)       = Nil
+runlength(Cons(a,x)) = f(runlength(x),a)
+
+f(Nil,a)               = Cons(Pair(a, Cons(B0,Nil) ),Nil)
+f(Cons(Pair(b,n),r),a) = g( eq(a,b),n,r) 
+g(Right(a),  n,r)
+    = Cons(Pair(a,inc(n)),r)
+g(Left(Pair(a,b)), n,r) 
+    = Cons(Pair(a, Cons(B0,Nil) ),Cons(Pair(b,n),r))
+
+-- inc, which only accepts
+-- [B0], [..., B1]
+inc(Cons(B1,Nil)) = Cons(B0,Cons(B1,Nil))
+inc(Cons(B0,Nil)) = Cons(B1,Nil)
+inc(Cons(B0,Cons(B0,x))) = Cons(B1,Cons(B0,nonemp(x)))
+inc(Cons(B0,Cons(B1,x))) = Cons(B1,Cons(B1,x)) 
+inc(Cons(B1,Cons(B0,x))) = Cons(B0,Cons(B1,nonemp(x)))
+inc(Cons(B1,Cons(B1,x))) = Cons(B0,Cons(B0,inc2(x)))
+
+inc2(Nil)        = Cons(B1,Nil)
+inc2(Cons(B0,x)) = Cons(B1,nonemp(x))
+inc2(Cons(B1,x)) = Cons(B0,inc2(x))
+
+nonemp(Cons(B0,x)) = Cons(B0,x)
+nonemp(Cons(B1,x)) = Cons(B1,x)
+
+
+eq(B0,B0) = Right(B0)
+eq(B1,B1) = Right(B1)
+eq(B0,B1) = Left(Pair(B0,B1))
+eq(B1,B0) = Left(Pair(B1,B0))
+
+{-
+fromHsList $ map (fromHsPair . \(x,y) ->(x,int2lsb y)) [(B0,3)]
+-}

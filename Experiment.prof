@@ -1,0 +1,44 @@
+	Wed Oct 28 23:11 2009 Time and Allocation Profiling Report  (Final)
+
+	   Experiment +RTS -K512M -H512M -p -RTS snoc 1
+
+	total time  =       28.52 secs   (1426 ticks @ 20 ms)
+	total alloc = 2,176,094,656 bytes  (excludes profiling overheads)
+
+COST CENTRE                    MODULE               %time %alloc
+
+size_a2le                      Main                  94.1   26.5
+snoc_exp                       Main                   1.8   25.0
+invsnoc                        Main                   1.8   27.9
+rnf_a2mX                       Main                   1.1    8.8
+fromHsList                     MyData                 0.6    8.8
+testRun                        Main                   0.6    2.9
+
+
+                                                                                               individual    inherited
+COST CENTRE              MODULE                                               no.    entries  %time %alloc   %time %alloc
+
+MAIN                     MAIN                                                   1           0   0.0    0.0   100.0  100.0
+ main                    Main                                                 206           1   0.0    0.0    96.7   57.4
+  snoc_exp               Main                                                 208           1   0.0    0.0    96.7   57.4
+   testRun               Main                                                 210          10   0.6    2.9    96.7   57.4
+    invsnoc              Main                                                 219     4000001   1.8   27.9     1.8   27.9
+    countTime            Main                                                 217           4   0.0    0.0     0.2    0.0
+     rnf_a2nH            Main                                                 218           1   0.0    0.0     0.2    0.0
+      rnf_a2mX           Main                                                 220     4000001   0.2    0.0     0.2    0.0
+    size_a2le            Main                                                 215     8000004  94.1   26.5    94.1   26.5
+   inv_Fsnoc             SNOC                                                 209           0   0.0    0.0     0.0    0.0
+ CAF                     Main                                                 200          15   0.0    0.0     3.3   42.6
+  countTime              Main                                                 221           0   0.0    0.0     0.0    0.0
+  size_a2k1              Main                                                 216           1   0.0    0.0     0.0    0.0
+  rnf_a2mX               Main                                                 213     8000003   0.9    8.8     0.9    8.8
+  snoc_exp               Main                                                 212           0   1.8   25.0     2.4   33.8
+   fromHsList            MyData                                               214     4000002   0.6    8.8     0.6    8.8
+  testRun                Main                                                 211           0   0.0    0.0     0.0    0.0
+  main                   Main                                                 207           0   0.0    0.0     0.0    0.0
+ CAF                     GHC.Show                                             196           1   0.0    0.0     0.0    0.0
+ CAF                     GHC.Float                                            174          10   0.0    0.0     0.0    0.0
+ CAF                     GHC.Handle                                           152           2   0.0    0.0     0.0    0.0
+ CAF                     GHC.Conc                                             151           1   0.0    0.0     0.0    0.0
+ CAF                     System.Environment                                   107           2   0.0    0.0     0.0    0.0
+ CAF                     System.CPUTime                                       106           1   0.0    0.0     0.0    0.0

@@ -1,0 +1,10 @@
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta http-equiv="content-style-type" content="text/css">
+<link rel="stylesheet" media="screen" title="simple" href="http://www.ipl.t.u-tokyo.ac.jp/~kztk/css/r.css" type="text/css">
+<style>
+  pre code { border: none }
+  code { background: transparent }
+  h1  code { border: none; background: transparent;  }
+  a  code { border: none; background: transparent;  }
+  tbody th { text-align: left; }
+</style>

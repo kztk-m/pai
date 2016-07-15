@@ -1,0 +1,9 @@
+-- O(n^2) reverse defined by snoc.
+-- The derived inverse is also O(n^2).
+
+reverse(Nil)       = Nil
+reverse(Cons(a,x)) =
+  snoc(reverse(x),a)
+
+snoc(Nil,b)        = Cons(b,Nil)
+snoc(Cons(a,x),b)  = Cons(a,snoc(x,b))

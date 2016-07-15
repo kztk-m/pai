@@ -1,0 +1,7 @@
+-- sigma(n) = n + (n-1) + .. + 0
+
+sigma(Z) = Z
+sigma(S(n)) = add(S(n), sigma(n))
+
+add(Z,n) = n
+add(S(m),n) = S(add(m,n))

@@ -1,0 +1,3 @@
+snoc(Nil,y)       = Cons(y,Nil)
+snoc(Cons(a,x),y) = Cons(a,snoc(x,y)) 
+

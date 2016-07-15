@@ -1,0 +1,35 @@
+{-
+ Since our algorithm allows non-deterministic program, 
+ we can derive patch from diff.
+ Note that in this case, system-returned "diff" definition 
+ is no more usefull because Haskell, functional programing language, 
+ disallow the non-deterministic program.
+
+-}
+
+diff(Nil,Nil) = Pair(Nil,Nil)
+diff(Cons(a,x),Cons(b,y)) 
+   = let Pair(org,ops) = diff(x,Cons(b,y))
+     in  Pair(Cons(a,org), Cons(Del,ops))
+diff(Cons(a,x),Cons(b,y))
+   = let Pair(Cons(a1,org),ops) = diff(Cons(a,x),y)
+     in  Pair(Cons(a1,org), Cons(Ins(b),ops))
+diff(Cons(a,x),Cons(b,y))
+   = let    Right(c) = eqCheck(a,b) 
+     in let Pair(org,ops) = diff(x,y)
+     in  Pair(Cons(a,org), Cons(Keep,ops))
+
+
+-- let1(a,Pair(org,ops)) = 
+--    Pair(Cons(a,org), Cons(Del,ops))
+-- let2(b,Pair(Cons(a,org),ops)) =
+--    Pair(Cons(a,org), Cons(Ins(b),ops))
+-- let3(Right(a),Pair(org,ops)) =
+--    Pair(Cons(a,org), Cons(Keep,ops))
+
+eqCheck(B0,B1) = Left(Pair(B0,B1))
+eqCheck(B1,B0) = Left(Pair(B1,B0))
+eqCheck(B0,B0) = Right(B0)
+eqCheck(B1,B1) = Right(B1)
+
+

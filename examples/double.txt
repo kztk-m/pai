@@ -1,0 +1,2 @@
+double(Z)    = Z
+double(S(x)) = S(S(double(x)))

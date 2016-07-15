@@ -1,0 +1,4 @@
+-- This definition contains duplication
+doubleList( Nil ) = Nil
+doubleList( Cons(a,x) ) 
+  = Cons(a,Cons(a,doubleList(x)))

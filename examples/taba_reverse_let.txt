@@ -1,0 +1,13 @@
+taba_reverse_let(x) = 
+      let Pair(Nil,y) = h(idshape(x))
+      in  y
+
+h(Pair(n,x)) = hImpl(n,x)
+
+hImpl(Z,   y) = Pair(y,Nil)
+hImpl(S(x),y) = let Pair(Cons(a,x1),y1) = hImpl(x,y)
+	        in  Pair(x1,Cons(a,y1))   
+
+idshape(Nil)       = Pair(Z,Nil)
+idshape(Cons(a,x)) = let Pair(n,x) = idshape(x)
+		     in  Pair(S(n),Cons(a,x))

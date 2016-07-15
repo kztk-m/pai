@@ -1,0 +1,13 @@
+-- treelist
+treelist(BL)      = Cons(Nil,Nil)
+treelist(BN(l,r)) = lettreelist(appn(treelist(l),treelist(r)))
+lettreelist(Pair(n,Cons(r,rs))) = Cons(n,Cons(r,rs))
+
+incL(Nil)        = Cons(B0,Nil)
+incL(Cons(B0,x)) = Cons(B1,x)
+incL(Cons(B1,x)) = Cons(B0,incL(x))
+
+appn(Nil,ys)            = Pair(Nil,ys)
+appn(Cons(x,xs),ys)     = letappend(appn(xs,ys),x)
+letappend(Pair(n,zs),x) = Pair(incL(n),Cons(x,zs))
+

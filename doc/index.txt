@@ -1,0 +1,252 @@
+ `PaI`: A System for Grammar-based Program Inversion
+=======================================================
+
+
+What is this?
+-------------
+
+This is an implementation of the paper 
+"Grammar-based Approach to Invertible Programs" 
+written by Kazutaka Matsuda et al.
+
+The program takes a input program written in a
+original programming language, and produces a Haskell code of its inverse.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.shell}
+$ cat examples/snoc.txt
+snoc(Nil,y)       = Cons(y,Nil)
+snoc(Cons(a,x),y) = Cons(a,snoc(x,y)) 
+
+$ ./pai examples/snoc.txt -i MyData > test.hs
+$ ghci test.hs
+...
+Ok, module loaded: MyData, InvSnoc, InvUtil.
+*Invsnoc> :t snoc 
+snoc :: List x -> x -> List x 
+*Invsnoc> :t inv_Fsnoc 
+inv_Fsnoc :: List t -> (List t, t)
+*Invsnoc> snoc (Cons 1 (Cons 2 Nil)) 3
+Cons 1 (Cons 2 (Cons 3 Nil))
+*Invsnoc> inv_Fsnoc (Cons 1 (Cons 2 (Cons 3 Nil)))
+(Cons 1 (Cons 2 Nil),3)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+For non-injective fucntion, 
+the system can generate a right inverse that enumerates 
+possible corresponding inputs.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.shell}
+$ cat examples/add.txt
+-- Noninjective program but linear & treeless
+-- Hence, the correct right inverse is obtained.
+add(Z,y) = y
+add(S(x),y) = S(add(x,y))
+$ ./pai examples/add.txt -i MyData > test.hs
+--- Ambiguity Info ------------------------------
+System failed to prove the injectivity because of following reasons: 
+Possibly range-overlapping expressions: 
+    at (3,12) -- (4,1)
+        y
+    at (4,15) -- (5,1)
+        S(add{9}(x{10},y{11}))
+$ ghci test.hs
+...
+Ok, modules loaded: MyData, Invadd, InvUtil.
+*Invadd> :t add
+add :: Nat -> Nat -> Nat
+*Invadd> :t inv_Fadd
+inv_Fadd :: Nat -> [(Nat,Nat)]
+*Invadd> add (S Z) (S (S Z))
+S (S (S Z))
+*Invadd> inv_Fadd (S (S (S Z)))
+[(Z,S (S (S Z))),(S Z,S (S Z)),(S (S Z),S Z),(S (S (S Z)),Z)]
+*Invadd> map (uncurry add) $ inv_Fadd (S (S (S Z)))
+[S (S (S Z)),S (S (S Z)),S (S (S Z)),S (S (S Z))]
+*Invadd> :m +Data.List
+*Invadd Data.List> nub $ map (uncurry add) $ inv_Fadd (S (S (S Z)))
+[S (S (S Z))]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+ Examples
+-----------
+
+You can run these generated inverses with [`InvUtil.hs`](InvUtil.hs)
+and [`MyData.hs`](MyData.hs).
+The directory [`examples`](./examples/) contains more examples.
+
+<table summary="example">
+  <thead>
+    <tr>	
+      <th>Description</th>
+      <th>Input Program</th><th>Generated Inverse</th><th>Suff-Left</th><th>Suff-Right</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th> ([1,2],3) -> [1,2,3] </th>
+      <td>[snoc.txt](examples/snoc.txt)</td>
+      <td>[SNOC.hs](examples/SNOC.hs)</td>
+      <td>OK</td>
+      <td>OK</td>
+    </tr>
+    <tr>
+      <th> 2*x </th>
+      <td>[double.txt](examples/double.txt)</td>
+      <td>[DOUBLE.hs](examples/DOUBLE.hs)</td>
+      <td>OK</td>
+      <td>OK</td>
+    </tr>
+    <tr>
+      <th> [1,2] -> [1,1,2,2] </th>
+      <td>[doubleList.txt](examples/doubleList.txt)</td>
+      <td>[DOUBLELIST.hs](examples/DOUBLELIST.hs)</td>
+      <td>OK</td>
+      <td>OK</td>
+    </tr>
+    <tr>
+      <th>Runlength Encoding</th>
+      <td>[runlength.txt](examples/runlength.txt)</td>
+      <td>[RUNLENGTH.hs](examples/RUNLENGTH.hs)</td>
+      <td>OK</td>
+      <td>  </td>
+    </tr>
+    <tr>
+      <th>Printing S Expression</th>
+      <td>[print_sexp.txt](examples/print_sexp.txt)</td>
+      <td>[PRINT_SEXP.hs](examples/PRINT_SEXP.hs)</td>
+      <td>OK</td>
+      <td>  </td>
+    </tr>
+    <tr>	
+      <th>IO-Swapped `reverse`</th>
+      <td>[taba_reverse.txt](examples/taba_reverse.txt)</td>
+      <td>[TABA_REVERSE.hs](examples/TABA_REVERSE.hs)</td>
+      <td>OK</td>
+      <td>  </td>
+    </tr>
+    <tr>
+      <th>Injective `zip`</th>
+      <td>[zipI.txt](examples/zipI.txt)</td>
+      <td>[ZIPI.hs](examples/ZIPI.hs)</td>
+      <td>OK</td>
+      <td>  </td>    
+    </tr>
+    <tr>
+      <th>x + y</th>
+      <td>[add.txt](examples/add.txt)</td>
+      <td>[ADD.hs](examples/ADD.hs)</td>
+      <td>  </td>
+      <td>OK</td>    
+    </tr>
+    <tr>
+      <th>`zip`</th>
+      <td>[zip.txt](examples/zip.txt)</td>
+      <td>[ZIP.hs](examples/ZIP.hs)</td>
+      <td>  </td>
+      <td>OK</td>       
+    </tr>    
+    <tr>
+      <th>`reverse`</th>
+      <td>[reverse.txt](examples/reverse.txt)</td>
+      <td>[REVERSE.hs](examples/REVERSE.hs)</td>
+      <td>  </td>
+      <td>  </td>       
+    </tr>
+    <tr>
+      <th>x + x </th>
+      <td>[dupdouble.txt](examples/dupdouble.txt)</td>
+      <td>[DUPDOUBLE.hs](examples/DUPDOUBLE.hs)</td>
+      <td>  </td>
+      <td>  </td>       
+    </tr>
+  </tbody>
+</table>
+
+
+   - Suff-Left:  Program is non-erasing and generated grammar is unambiguous.
+   - Suff-Right: Program is affine and treeless.
+
+
+The system fails to invert programs that satisfy neither Suff-Left nor Suff-Right.
+There is no guaratee that the obtained program is really inverse.
+
+
+ How to build
+--------------
+   0. Install [GHC] over 6.8.2.
+   1. Download tar file: [PaI20091026.tar.gz](./PaI20091026.tar.gz)
+   2. Unpack the tar file: `tar zxvf PaI.tar.gz`
+   3. Move to the generated directory: `cd PaI`
+   4. `make`
+     - In case of trouble, please edit make file to fix the problem.
+     - `pai` (or, `pai.exe` in Windows) is the name of the program inverter
+     - Directory `examples` contains some examples.
+     - `MyData.hs` contains data declarations for the examples.
+     - `InvUtil.hs` contains function defintions used in the generated inverses.
+
+[GHC]: http://www.haskell.org/ghc/    
+
+ Options of `pai`
+------------------
+
+`-i MODULE_NAME`
+:    It inserts "import MODULE_NAME" to a generated inverse program.
+
+`-f INPUT_FILE`
+:    It specifies input file.
+
+`-m MODULE_NAME`
+:    It specifies the module name of a generated inverse program.
+
+`-d`
+:    It turns on debugMode flag.
+
+`-h`
+:    Not implemented. (help)
+
+`-t`
+:    With this flag, `pai` shows elapsed time of code generation.
+
+
+ Syntax of Input Program
+-----------------------------
+
+    <Prog> ::= <Decl> ... <Decl>
+    
+    <Decl> ::= FunName(<Pat>,...,<Pat>) = <Exp>
+    <Pat>  ::= ConName(<Pat>,...,<Pat>)
+            |  VarName 
+    <Exp>  ::= FunName(<Exp>,...,<Exp>)
+            |  ConName(<Exp>,...,<Exp>)
+            |  VarName 
+            |  let <Pat> = <Exp> in <Exp>
+    
+    FunName = [a-z] [a-zA-Z0-9_]*
+    VarName = [a-z] [a-zA-Z0-9_]*
+    ConName = [A-Z] [a-zA-Z0-9_]*
+
+
+ Limitations & Known Issues
+-----------------------------
+
+  * The derived code may not accept a value in the range of 
+    original function if the ambiguity test does not succeed.
+
+
+
+<div class="footer">
+
+----------------------
+
+
+<address>Kazutaka Matsuda: <kztk@ipl.t.u-tokyo.ac.jp>.</address>
+
+The first version of this page was published in 2009-10-08.
+</div>

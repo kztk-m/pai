@@ -1,0 +1,9 @@
+-- twopower(n) = 2^(n+1)
+
+twopower(Z)    = S(S(Z))
+twopower(S(n)) = double2(twopower(n))
+
+double2(S(S(n))) = S(S(S(S(double(n)))))
+
+double(Z)    = Z
+double(S(n)) = S(S(double(n)))

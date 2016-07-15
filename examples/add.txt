@@ -1,0 +1,4 @@
+-- Noninjective program but linear & treeless
+-- Hence, the correct right inverse is obtained.
+add(Z,y) = y
+add(S(x),y) = S(add(x,y))

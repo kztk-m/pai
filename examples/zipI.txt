@@ -1,0 +1,4 @@
+-- Injective Zip
+myzip(Nil,Nil)       = Nil
+myzip(Cons(a,x),Cons(b,y))
+  = Cons(Pair(a,b),myzip(x,y))

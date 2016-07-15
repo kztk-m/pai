@@ -1,0 +1,12 @@
+-- Like dupdouble, fib is another typical example that 
+-- current method does not handle well.
+-- The current method fails to construct a correct inverse for the function.
+
+fib(Z) = S(Z)
+fib(S(n)) = fib2(n)
+
+fib2(Z) = S(S(Z))
+fib2(S(m)) = add(fib(S(m)), fib(m))
+
+add(Z,y) = y
+add(S(x),y) = S(add(x,y))

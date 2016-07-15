@@ -1,0 +1,6 @@
+-- This function is not well handled by
+-- regular-grammar based inversion.
+reverse(x) = rev(x,Nil)
+
+rev(Nil,      y) = y
+rev(Cons(a,x),y) = rev(x,Cons(a,y))

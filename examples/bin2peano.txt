@@ -1,0 +1,22 @@
+bin2peano(Cons(B0,Nil)) = Z
+bin2peano(Cons(B1,Nil)) = S(Z)
+bin2peano(Cons(B0,Cons(a,x))) = doubleP(bin2peano1(Cons(a,x)))
+bin2peano(Cons(B1,Cons(a,x))) = S(doubleP(bin2peano1(Cons(a,x))))
+
+bin2peano1(Cons(B0,x)) = doubleP(bin2peano1(x))
+bin2peano1(Cons(B1,x)) = S(double(bin2peano2(x)))
+
+bin2peano2(Nil)        = Z
+bin2peano2(Cons(B0,x)) = doubleP(bin2peano1(x))
+bin2peano2(Cons(B1,x)) = S(double(bin2peano2(x)))
+
+double(Z)    = Z
+double(S(x)) = S(S(double(x)))
+
+doubleP(S(Z))    = S(S(Z))
+doubleP(S(S(x))) = S(S(S(S(double(x)))))
+		    
+-- Does specialization of function help in this case?
+
+
+

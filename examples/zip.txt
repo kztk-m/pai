@@ -1,0 +1,6 @@
+-- Non injective zip like zip in Haskell Prelude.
+
+zip(Nil,y)         = Nil
+zip(Cons(a,x),Nil) = Nil
+zip(Cons(a,x),Cons(b,y))
+  = Cons(Pair(a,b),zip(x,y))

@@ -1,0 +1,19 @@
+-- From http://www.trs.cm.is.nagoya-u.ac.jp/repius/experiments
+-- 
+-- GHC take very long time to load the generated inverse.
+--
+-- Taking S-Expression, function printSExp seems to generates 
+-- the sequence of tokens correspoding to the given S-Exp.
+
+
+printSExp(x) = printCar(x,MSTokEOS)
+
+printCar(Symbol(x), t) = Str(x,t)
+printCar(SNil,      t) = LPar(RPar(t))
+printCar(SCons(x,y),t) = LPar(printCar(x,printCdr(y,t)))
+
+printCdr(Symbol(x), t) = Dot (Str(x,RPar(t)))
+printCdr(SNil,      t) = RPar(t)
+printCdr(SCons(x,y),t) = printCar(x,printCdr(y,t))
+
+

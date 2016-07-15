@@ -1,0 +1,11 @@
+-- We do no use List because
+-- of the efficiency reason;
+-- the order of the derived inverse changes
+-- because in GTA we cannot pass any information from
+-- children to children.
+--
+-- Does left-to-right dfs help?
+
+serialize_bintree(x) = sb(x,EOS)
+sb(BL,r)      = L(R(r))
+sb(BN(x,y),r) = L(sb(x,sb(y,R(r))))

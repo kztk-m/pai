@@ -1,0 +1,15 @@
+-- Converting peano representation of natural nubmer
+-- (e.g., S(S(Z))) to LSB representation 
+-- (e.g., [B0,B1]).
+
+peano2bin(x)  = testHalve( halve(x) )
+
+
+testHalve( Pair(b,Z)   ) = Cons(b,Nil)
+testHalve( Pair(b,S(x))) = Cons(b,peano2bin(S(x)))				
+
+halve(Z)       = Pair(B0,Z)
+halve(S(Z))    = Pair(B1,Z)
+halve(S(S(x))) = let Pair(b,s) = halve(x)
+	         in  Pair(b,S(s))
+	       
