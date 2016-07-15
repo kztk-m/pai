@@ -1,4 +1,4 @@
-{-# OPTIONS -XMultiParamTypeClasses -XTemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses, TemplateHaskell #-}
 module Inverter.CodeGen (genCode) where
 
 import qualified Language.Haskell.TH as TH
@@ -52,7 +52,8 @@ genDataDecl e states isAmb
     = [ TH.DataD [] dName vars cs [] ]
     where
       dName = TH.mkName $ "StatesOf" ++ show e
-      vars  = if isAmb then 
+      vars  = map TH.PlainTV $
+              if isAmb then 
                   [ s2n s | s <- states ]++[deadStateName]
               else
                   [ s2n s | s <- states ]

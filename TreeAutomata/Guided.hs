@@ -29,7 +29,7 @@ import Data.Graph
 import Data.Maybe
 import Data.List
 
-import Data.Monoid
+import Data.Monoid hiding ((<>))
 
 import Data.Function (on)
 

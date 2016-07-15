@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Inverter.Build (
     -- fromProgramToGTA,  -- ^ this should be made obsolette
     fromProgramToTA,

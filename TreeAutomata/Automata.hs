@@ -19,7 +19,7 @@ import qualified Data.Set as Set
 import Data.Maybe
 import Data.List
 
-import Data.Monoid
+import Data.Monoid hiding ((<>))
 import Data.Function (on)
 
 import Control.Monad.State hiding (mapState)

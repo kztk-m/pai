@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Syntax.Abstract 
     (
      Pat(..), Exp(..), Prog(..), Decl(..),
