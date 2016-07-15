@@ -1,5 +1,5 @@
-HSOPTSC    = -fllvm -optlo-O3 #-fvia-C -optc -w # -optc -frename-registers # -optc -O3 #-optc -march=core2 
-HSOPTS     = -O2 
+HSOPTSC    = #-fllvm -optlo-O3 #-fvia-C -optc -w # -optc -frename-registers # -optc -O3 #-optc -march=core2 
+HSOPTS     = -O2 -rtsopts
 HSOPTS_ARC = 
 HSOPTS_EXP = $(HSOPTS) $(HSOPTSC) # -ddump-simpl-stats 
 
@@ -20,20 +20,11 @@ HSSRC = $(shell find ./ -name "*.hs")
 
 all : $(EXECUTABLE) 
 
-# opt : HSOPTS += $(HSOPTSC) $(HSOPTS_ARC)
-# opt : $(EXECUTABLE) 
-
-# prof : HSOPTS += -prof -auto-all 
-# prof : $(EXECUTABLE)
-
-experiment_opt : HSOPTS += $(HSOPTSC) $(HSOPTS_ARC)
-experiment_opt : experiment 
 
 $(EXECUTABLE) : $(HSSRC)
 	cabal build -j 
 	cp ./dist/build/PaI/PaI ./$(EXECUTABLE)
 
-#	ghc -o $(EXECUTABLE) $(HSOPTS) --make Main.hs 
 
 
 example : $(EXECUTABLE)
@@ -48,9 +39,10 @@ example : $(EXECUTABLE)
 	   tail -1 $(EXAMPLE_DIR)/$${gta}; \
 	done
 
-experiment : $(EXP_TARGET) $(EXAMPLE_OUT2) 
+experiment_recomp: HSOPTS_EXP += -fforce-recomp 
+experiment_recomp: experiment 
 
-$(EXP_TARGET) : $(EXP_SRC)
+experiment : 
 	ghc -i$(EXAMPLE_DIR)  $(HSOPTS_EXP) --make $(EXP_SRC) -o $(EXP_TARGET)
 
 
@@ -68,8 +60,8 @@ clean :
 	rm -f $(EXAMPLE_DIR)/*.hs
 	rm -f $(EXAMPLE_DIR)/*.gta
 	cabal clean 
-#	rm -f $(EXECUTABLE)
-#	rm -f $(EXECUTABLE).exe
+	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE).exe
 	rm -f $(EXP_TARGET)
 	rm -f $(EXP_TARGET).exe
 	rm -f *~

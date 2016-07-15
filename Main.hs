@@ -27,8 +27,9 @@ import System.Environment
 import System.CPUTime
 import Text.Printf
 
-import qualified Language.Haskell.TH as TH
+-- import qualified Language.Haskell.TH as TH
 
+import qualified Syntax.MiniHaskell as H 
 -- 
 -- Main function 
 --
@@ -48,7 +49,7 @@ main = do { args <- getArgs
                do let (prog, imap, ta, gtaMap, ambi, code) = invert cprog
                   when (debugMode conf) $ debugInfo (prog, ta, gtaMap) 
                   putStrLnE $ showAmbiInfo imap ambi
-                  let entries = (show $ head [ f | TH.FunD f _   <- code ],
+                  let entries = (show $ head [ f | H.FunD f _   <- code ],
                                  show $ head [ f | Decl _ f _ _ <- decls prog])
                   printCode code (moduleName conf) (extraImport conf) entries
                   printOCode prog 
@@ -142,10 +143,10 @@ parseArgs args conf =
                  
 printOCode :: Prog -> IO ()
 printOCode prog = 
-    putStrLn $ TH.pprint (ast2hs prog)
+    putStrLn $ H.pprint (ast2hs prog)
 
 
-printCode :: [TH.Dec] -> Maybe String -> [String] -> (String,String) 
+printCode :: [H.Dec] -> Maybe String -> [String] -> (String,String) 
              -> IO ()
 printCode code modName imp (e1,e2) 
     = do { putStrLn  "{-# OPTIONS -XNoMonomorphismRestriction #-}"
@@ -157,7 +158,7 @@ printCode code modName imp (e1,e2)
          ; putStrLn  "import InvUtil\n"
          ; putStrLn  "import Data.Tuple\n" 
          ; mapM_ putStrLn [ "import " ++ v | v <- imp ]                
-         ; putStrLn (TH.pprint code ) }
+         ; putStrLn (H.pprint code ) }
 
 
 {- for debugging?

@@ -15,7 +15,8 @@ import Data.Map (Map)
 import Data.List (nub)
 
 import Util
-import qualified Language.Haskell.TH as TH
+-- import qualified Language.Haskell.TH as TH
+import qualified Syntax.MiniHaskell as H 
 
 import Text.PrettyPrint 
 
@@ -28,7 +29,7 @@ invert ::
       TA AState Name Act,
       Map AState (GTA Int Int Name Act),
       AmbiguityInfo,
-      [TH.Dec])
+      [H.Dec])
 invert cprog =
   let (prog, imap)       = fromCSTtoAST cprog
       (ta, entry, other) = fromProgramToTA prog

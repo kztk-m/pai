@@ -23,7 +23,8 @@ import qualified Data.Foldable as Foldable
 import Data.Sequence (Seq, (<|), (|>),ViewL,ViewL(..),viewl)
 import qualified Data.Sequence as Seq
 
-import qualified Language.Haskell.TH as TH
+-- import qualified Language.Haskell.TH as TH
+import qualified Syntax.MiniHaskell as H 
 
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -276,25 +277,25 @@ instance Show Exp where
     show e = render $ pprExp e True
 
 
-ast2hs :: Prog -> [TH.Dec]
+ast2hs :: Prog -> [H.Dec]
 ast2hs (Prog decls) = 
     map d2h $ groupBy sameFun decls
     where
       sameFun (Decl _ f _ _) (Decl _ g _ _) = f == g 
       d2h [Decl _ f ps e] = 
-          TH.FunD (TH.mkName $ show f) 
-                   [ TH.Clause (map p2h ps) (TH.NormalB $ e2h e) [] ]
+          H.FunD (H.mkName $ show f) 
+                   [ H.mkSimpleClause (map p2h ps) (e2h e) ]
       d2h (ds@(Decl _ f ps e:_)) =
-          TH.FunD (TH.mkName $ show f) 
-                   [ TH.Clause (map p2h ps) (TH.NormalB $ e2h e) [] 
+          H.FunD (H.mkName $ show f) 
+                   [ H.mkSimpleClause (map p2h ps) (e2h e) 
                          | Decl _ f ps e <- ds ]
       p2h (ConP _ c ps) =
-          TH.ConP (TH.mkName $ show c) (map p2h ps)
-      p2h (VarP _ v)    = TH.VarP $ (TH.mkName $ show v)
+          H.ConP (H.mkName $ show c) (map p2h ps)
+      p2h (VarP _ v)    = H.VarP $ (H.mkName $ show v)
       e2h (ConE _ c es) =
-          foldl (TH.AppE) (TH.ConE $ TH.mkName $ show c) (map e2h es)
-      e2h (VarE _ v)    = TH.VarE $ (TH.mkName $ show v)
+          foldl H.appE (H.ConE $ H.mkName $ show c) (map e2h es)
+      e2h (VarE _ v)    = H.VarE $ (H.mkName $ show v)
       e2h (FunE _ f es) =
-          foldl (TH.AppE) (TH.VarE $ TH.mkName $ show f) (map e2h es)
+          foldl H.appE (H.VarE $ H.mkName $ show f) (map e2h es)
 
           

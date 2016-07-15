@@ -28,28 +28,35 @@ instance Default a => Default (Either a b) where
 newtype I x = I { runI :: x }
     deriving (Show)
 
+instance Functor I where
+  {-# INLINE [1] fmap #-}
+  fmap f (I x) = I (f x)
+
+instance Applicative I where
+  {-# INLINE [1] pure #-}
+  pure = I
+
+  {-# INLINE [1] (<*>) #-}
+  I f <*> I x = I (f x)
+
 instance Monad I where 
-    {-# SPECIALIZE return :: x -> I x  #-}
     {-# INLINE [1] return #-}
     return        = I
-    {-# SPECIALIZE (>>=)  :: (I a) -> (a -> I b) -> I b  #-}
     {-# INLINE [1] (>>=) #-}
     (>>=) (I x) f = f x
-    {-# SPECIALIZE fail :: String -> (I a) #-}
     {-# INLINE [1] fail #-}
     fail x = error x
 
-{-# INLINE [2]  checkEq #-}
-{-# SPECIALIZE checkEq :: Eq a => I a -> I a -> I a #-}
+{-# INLINABLE checkEq #-}
+{-# SPECIALIZE INLINE [2] checkEq :: Eq a => I a -> I a -> I a #-}
 checkEq :: (Monad m,Eq a) => m a -> m a -> m a 
 checkEq x y =
     do { a <- x 
        ; b <- y 
        ; checkEqPrim a b }
 
-
-{-# INLINE  checkEqPrim #-}
-{-# SPECIALIZE checkEqPrim :: Eq a => a -> a -> I a #-}
+{-# INLINABLE  checkEqPrim #-}
+{-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> I a #-}
 checkEqPrim a b | a == b = return a 
                 | True   = fail $ "Incosistency Found"
                 
@@ -70,7 +77,7 @@ mymzero = mzero
 -- addPossibility (x:xs) ys = x:addPossibility ys xs
 
 {-# RULES
-"checkEqPrim" forall x y. checkEq (return x) (return y) = checkEqPrim x y
+"checkEqPrim"[3] forall x y. checkEq (return x) (return y) = checkEqPrim x y
   #-}
 
 {-# RULES
@@ -78,9 +85,9 @@ mymzero = mzero
   #-}
 
 {-# RULES
-"SimplifyLiftM2"   forall f x. liftM f (return x) = return (f x)
-"SimplifyLiftM2"   forall f x y. liftM2 f (return x) (return y) = return (f x y)
-"SimplifyLiftM3"   forall f x y z. liftM3 f (return x) (return y) (return z) = return (f x y z)
-"SimplifyReturn0"  forall x. return () >>= (\() -> x) = x
-"SimplifyReturn1'" forall x. return x >>= (\y -> return y) = return x
+"SimplifyLiftM2"[3]   forall f x. liftM f (return x) = return (f x)
+"SimplifyLiftM2"[3]   forall f x y. liftM2 f (return x) (return y) = return (f x y)
+"SimplifyLiftM3"[3]   forall f x y z. liftM3 f (return x) (return y) (return z) = return (f x y z)
+"SimplifyReturn0"[3]  forall x. return () >>= (\() -> x) = x
+"SimplifyReturn1'"[3] forall x. return x >>= (\y -> return y) = return x
   #-}
