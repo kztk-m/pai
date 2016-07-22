@@ -1,16 +1,17 @@
 module InvUtil 
-    (
-     (>=>), I(..), 
-     checkEq, checkEqPrim, fixApp, Default, something, mymplus, mymzero, S, runS
+       (
+         (>=>), I(..), 
+         checkEq, checkEqPrim, fixApp,
+         Default(..),
+         mymplus, mymzero, S, runS
     ) where 
 
-import Control.Monad.SearchTree
--- import Control.Monad ()
-import Control.Monad ( (>=>), liftM, liftM2, liftM3, mplus, mzero )
-import Control.Monad (MonadPlus)
 import Control.Applicative (Alternative, empty, (<|>))
-           
-               
+import Control.Monad ( (>=>), liftM, liftM2, liftM3, mplus, mzero , MonadPlus)
+
+import Control.Monad.SearchTree
+
+  
 class Default a where
     something :: a 
 
@@ -51,7 +52,8 @@ instance Monad I where
     {-# INLINE [1] fail #-}
     fail x = error x
 
-{-# INLINABLE checkEq #-}
+{-# INLINABLE[2] checkEq #-}
+{-# SPECIALIZE INLINE [2] checkEq :: Eq a => S a -> S a -> S a #-}
 {-# SPECIALIZE INLINE [2] checkEq :: Eq a => I a -> I a -> I a #-}
 checkEq :: (Monad m,Eq a) => m a -> m a -> m a 
 checkEq x y =
@@ -60,7 +62,9 @@ checkEq x y =
        ; checkEqPrim a b }
 
 {-# INLINABLE  checkEqPrim #-}
+{-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> S a #-}
 {-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> I a #-}
+checkEqPrim :: (Monad m, Eq a) => a -> a -> m a 
 checkEqPrim a b | a == b = return a 
                 | True   = fail $ "Incosistency Found"
                 
@@ -94,10 +98,12 @@ instance Show a => Show (S a) where
   
 -- Currently, these functions are less polymorphic 
 -- because of typing issue.
+{-# INLINE mymplus #-}
 mymplus :: S a -> S a -> S a
 mymplus = mplus 
 
-mymzero :: S a 
+{-# INLINE mymzero #-}
+mymzero :: S a
 mymzero = mzero
 
 
@@ -121,11 +127,6 @@ runRaw x = rs step
     idfs n (Choice x1 x2) r b =
       uncurry (idfs (n-1) x1) (idfs (n-1) x2 r b)
 
-
-
--- zeroPossibility = []
--- addPossibility [] ys = ys
--- addPossibility (x:xs) ys = x:addPossibility ys xs
 
 {-# RULES
 "checkEqPrim"[3] forall x y. checkEq (return x) (return y) = checkEqPrim x y

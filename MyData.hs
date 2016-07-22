@@ -1,4 +1,5 @@
-{-# OPTIONS -XFunctionalDependencies -XUndecidableInstances -XMultiParamTypeClasses -XFlexibleInstances -XIncoherentInstances #-}
+{-# LANGUAGE UndecidableInstances, MultiParamTypeClasses, FlexibleInstances, IncoherentInstances #-}
+
 
 module MyData where
 
@@ -9,19 +10,37 @@ data Nat = Z | S Nat deriving (Eq,Ord,Show)
 instance Default Nat where
     something = Z
 
+instance Num Nat where
+  Z   + m = m
+  S n + m = S (n + m)
 
+  Z   * m = Z
+  S n * m = m + (n * m)
+
+  abs n   = n
+  
+  signum Z = Z
+  signum _ = S Z
+
+  fromInteger 0 = Z
+  fromInteger n = S (fromInteger (n-1))
+
+  m - Z = m
+  S m - S n = m - n 
+  Z - n = Z
 
 -- int2nat 0     
 --     = Z
 -- int2nat (n+1) | n >= 0 
 --     = S (int2nat n)
 
+int2nat :: (Eq n, Num n) => n -> Nat 
 int2nat n = f n Z 
     where f n x | seq x True = if n == 0 then x else f (n-1) (S x)
           
 
--- nat2int Z     = 0
--- nat2int (S x) = 1 + (nat2int x)
+{-# INLINABLE[1] nat2int #-}
+nat2int :: Num n => Nat -> n 
 nat2int n = f n 0
     where f n x | seq x True = case n of 
                                  Z   -> x
@@ -39,6 +58,7 @@ instance Default (List a) where
 
 data B = B0 | B1 deriving (Eq,Ord,Show)
 
+int2lsb :: Int -> List B 
 int2lsb 0 = Cons B0 Nil
 int2lsb 1 = Cons B1 Nil
 int2lsb n = 
@@ -47,6 +67,8 @@ int2lsb n =
     else
         Cons B1 (int2lsb (n `div` 2))
 
+{-# INLINABLE[1] lsb2int #-}
+lsb2int :: List B -> Int 
 lsb2int (Cons B0 Nil) = 0
 lsb2int (Cons B1 Nil) = 1
 lsb2int (Cons B0 x) = 2 * lsb2int x 
@@ -57,12 +79,10 @@ lsb2int (Cons B1 x) = 1 + (2 * lsb2int x)
 instance Default B where
     something = B0
 
-
-fromHsList []    = Nil
-fromHsList (a:x) = Cons a (fromHsList x)
+fromHsList x = foldr Cons Nil x
 
 toHsList Nil        = []
-toHsList (Cons a x) = (a:toHsList x)
+toHsList (Cons a x) = a:toHsList x
 
 data MParen = L MParen | R MParen | EOS
 
