@@ -1,0 +1,40 @@
+FILES
+-----
+
+  * README.        This document. 
+  * runlength8.txt An implementation of run-length compression. 
+  * RLMain.hs      Haskell program that use the generated inverse of runlength8.txt.
+  * test.bmp       A raw-bitmap file to compress. 
+
+How to Generate Inverse
+-----------------------
+
+    $ ../pai -i MyData -m RUNLENGTH8 -f runlength8.txt 
+
+Then, `RUNLENGTH8.hs` has been generated. 
+
+How to Compile RLMain.hs
+------------------------
+
+    $ ghc -j -i.. --make RLMain.hs
+
+This may take a time. 
+
+Demonstration 
+-------------
+
+    $ display test.bmp # Or, open if you are using Mac. 
+    $ ./RLMain encode test.bmp test_out
+    $ ls -lh test*
+    ...
+    $ ./RLMain decode test_out test_r.bmp
+    $ ls -lh test* 
+    ... 
+    $ display test_r.bmp # Or, open if you are using Mac. 
+    $ diff test.bmp test_r.bmp 
+
+Make sure that you must delete generated files before and/or after the
+demostration.
+
+
+
