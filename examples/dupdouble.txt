@@ -1,5 +1,5 @@
 -- A typical example that current method does not handle well.
--- The current method generates O(n^2) inverse is obtained.
+-- The current method generates O(n^2) inverse.
 double(n) = add(dup(n))
 
 dup(Z) = Pair(Z,Z)
