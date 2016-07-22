@@ -1,0 +1,85 @@
+runlength(x) = flatten(runlength8(x))
+
+-- runlength8 :: List Byte -> List (Pair Byte UInt)
+runlength8( Nil )       = Nil
+runlength8( Cons(a,x) ) = f( a, runlength8(x) )
+
+zero() = Cons(B0,Nil)
+
+f( a, Nil )              = Cons(Pair(a, Nil), Nil)
+f( a, Cons(Pair(b,n),r)) = caseCheck( isEq(a,b), n, r ) 
+
+caseCheck( Right(a), n, r)
+    = Cons( Pair(a,inc(n)), r)
+caseCheck( Left(Pair(a,b)),n, r)
+    = Cons( Pair(a,Nil), Cons( Pair(b,n), r) )
+
+-- flatten :: List (Pair Byte UInt) -> List Byte
+flatten (Nil)
+    = Nil
+flatten (Cons (Pair(a,n),r)) 
+    = Cons (a, flatten0(n,r))
+
+flatten0 (Nil,r) 
+    = Cons (Nil, flatten(r))
+flatten0 (Cons(b1,Nil),r)
+    = Cons (Cons(B0,Cons(b1,Nil)), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Nil)),r)
+    = Cons (Cons(B0,Cons(b1,Cons(b2,Nil))), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Cons(b3,Nil))),r)
+    = Cons (Cons(B0,Cons(b1,Cons(b2,Cons(b3,Nil)))), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Cons(b3,Cons(b4,Nil)))),r)
+    = Cons (Cons(B0,Cons(b1,Cons(b2,Cons(b3,Cons(b4,Nil))))), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Nil))))),r)
+    = Cons (Cons(B0,Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Nil)))))), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(b6,Nil)))))),r)
+    = Cons (Cons(B0,Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(b6,Nil))))))), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(b6,Cons(b7,Nil))))))),r)
+    = Cons (Cons(B0,Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(b6,Cons(b7,Nil)))))))), flatten(r))
+flatten0 (Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(b6,Cons(b7,Cons(b8,n)))))))),r)
+    = Cons (Cons(B1,truncB(b1,b2,b3,b4,b5,b6,b7)), flatten0(Cons(b8,n),r))
+
+-- truncB [ ... ,B1,B0] ->  [..., B1]
+truncB(b1,b2,b3,b4,b5,b6,B1) = Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(b6,Cons(B1,Nil)))))))
+truncB(b1,b2,b3,b4,b5,B1,B0) = Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(b5,Cons(B1,Nil))))))
+truncB(b1,b2,b3,b4,B1,B0,B0) = Cons(b1,Cons(b2,Cons(b3,Cons(b4,Cons(B1,Nil)))))
+truncB(b1,b2,b3,B1,B0,B0,B0) = Cons(b1,Cons(b2,Cons(b3,Cons(B1,Nil))))
+truncB(b1,b2,B1,B0,B0,B0,B0) = Cons(b1,Cons(b2,Cons(B1,Nil)))
+truncB(b1,B1,B0,B0,B0,B0,B0) = Cons(b1,Cons(B1,Nil))
+truncB(B1,B0,B0,B0,B0,B0,B0) = Cons(B1,Nil)
+truncB(B0,B0,B0,B0,B0,B0,B0) = Nil
+
+
+-- isEq(a,b) = Right(a)  if a = b
+-- isEq(a,b) = Left(a,b) otherwise 
+
+isEq( Nil,       Nil       ) = Right( Nil )
+isEq( Nil,       Cons(b,y) ) = Left( Pair(Nil, Cons(b,y)) )
+isEq( Cons(a,x), Nil       ) = Left( Pair(Cons(a,x), Nil) )
+isEq( Cons(B0,x), Cons(B1,y) ) 
+    = Left( Pair(Cons(B0,x), Cons(B1,y)) )
+isEq( Cons(B1,x), Cons(B0,y) ) 
+    = Left( Pair(Cons(B1,x), Cons(B0,y)) ) 
+isEq( Cons(B0,x), Cons(B0,y) ) 
+    = caseRL0( isEq(x,y) )
+isEq( Cons(B1,x), Cons(B1,y) ) 
+    = caseRL1( isEq(x,y) ) 
+
+caseRL0( Left(Pair(x,y)) ) 
+    = Left( Pair(Cons(B0,x), Cons(B0,y)) )
+caseRL0( Right(x) ) 
+    = Right( Cons(B0,x) )
+
+caseRL1( Left(Pair(x,y)) ) 
+    = Left( Pair(Cons(B1,x), Cons(B1,y)) )
+caseRL1( Right(x) ) 
+    = Right( Cons(B1,x) )
+
+    
+-- +1 
+inc(Nil)          = Cons(B1,Nil)
+inc(Cons(B0,x))   = Cons(B1,nonemp(x))
+inc(Cons(B1,x))   = Cons(B0,inc(x))
+
+nonemp(Cons(B0,x)) = Cons(B0,x)
+nonemp(Cons(B1,x)) = Cons(B1,x)

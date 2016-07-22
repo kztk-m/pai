@@ -14,26 +14,22 @@ original programming language, and produces a Haskell code of its inverse.
 
 
 
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.shell}
-$ cat examples/snoc.txt
-snoc(Nil,y)       = Cons(y,Nil)
-snoc(Cons(a,x),y) = Cons(a,snoc(x,y)) 
-
-$ ./pai examples/snoc.txt -i MyData > test.hs
-$ ghci test.hs
-...
-Ok, module loaded: MyData, InvSnoc, InvUtil.
-*Invsnoc> :t snoc 
-snoc :: List x -> x -> List x 
-*Invsnoc> :t inv_Fsnoc 
-inv_Fsnoc :: List t -> (List t, t)
-*Invsnoc> snoc (Cons 1 (Cons 2 Nil)) 3
-Cons 1 (Cons 2 (Cons 3 Nil))
-*Invsnoc> inv_Fsnoc (Cons 1 (Cons 2 (Cons 3 Nil)))
-(Cons 1 (Cons 2 Nil),3)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    $ cat examples/snoc.txt
+    snoc(Nil,y)       = Cons(y,Nil)
+    snoc(Cons(a,x),y) = Cons(a,snoc(x,y)) 
+    
+    $ ./pai examples/snoc.txt -i MyData > test.hs
+    $ ghci test.hs
+    ...
+    Ok, module loaded: MyData, InvSnoc, InvUtil.
+    *Invsnoc> :t snoc 
+    snoc :: List x -> x -> List x 
+    *Invsnoc> :t inv_Fsnoc 
+    inv_Fsnoc :: List t -> (List t, t)
+    *Invsnoc> snoc (Cons 1 (Cons 2 Nil)) 3
+    Cons 1 (Cons 2 (Cons 3 Nil))
+    *Invsnoc> inv_Fsnoc (Cons 1 (Cons 2 (Cons 3 Nil)))
+    (Cons 1 (Cons 2 Nil),3)
 
 
 For non-injective fucntion, 
@@ -41,37 +37,36 @@ the system can generate a right inverse that enumerates
 possible corresponding inputs.
 
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.shell}
-$ cat examples/add.txt
--- Noninjective program but linear & treeless
--- Hence, the correct right inverse is obtained.
-add(Z,y) = y
-add(S(x),y) = S(add(x,y))
-$ ./pai examples/add.txt -i MyData > test.hs
---- Ambiguity Info ------------------------------
-System failed to prove the injectivity because of following reasons: 
-Possibly range-overlapping expressions: 
-    at (3,12) -- (4,1)
-        y
-    at (4,15) -- (5,1)
-        S(add{9}(x{10},y{11}))
-$ ghci test.hs
-...
-Ok, modules loaded: MyData, Invadd, InvUtil.
-*Invadd> :t add
-add :: Nat -> Nat -> Nat
-*Invadd> :t inv_Fadd
-inv_Fadd :: Nat -> [(Nat,Nat)]
-*Invadd> add (S Z) (S (S Z))
-S (S (S Z))
-*Invadd> inv_Fadd (S (S (S Z)))
-[(Z,S (S (S Z))),(S Z,S (S Z)),(S (S Z),S Z),(S (S (S Z)),Z)]
-*Invadd> map (uncurry add) $ inv_Fadd (S (S (S Z)))
-[S (S (S Z)),S (S (S Z)),S (S (S Z)),S (S (S Z))]
-*Invadd> :m +Data.List
-*Invadd Data.List> nub $ map (uncurry add) $ inv_Fadd (S (S (S Z)))
-[S (S (S Z))]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    $ cat examples/add.txt
+    -- Noninjective program but linear & treeless
+    -- Hence, the correct right inverse is obtained.
+    add(Z,y) = y
+    add(S(x),y) = S(add(x,y))
+    $ ./pai examples/add.txt -i MyData > test.hs
+    --- Ambiguity Info ------------------------------
+    System failed to prove the injectivity because of following reasons: 
+    Possibly range-overlapping expressions: 
+        at (3,12) -- (4,1)
+            y
+        at (4,15) -- (5,1)
+            S(add{9}(x{10},y{11}))
+    $ ghci test.hs
+    ...
+    Ok, modules loaded: MyData, Invadd, InvUtil.
+    *Invadd> :t add
+    add :: Nat -> Nat -> Nat
+    *Invadd> :t inv_Fadd
+    inv_Fadd :: Nat -> [(Nat,Nat)]
+    *Invadd> add (S Z) (S (S Z))
+    S (S (S Z))
+    *Invadd> inv_Fadd (S (S (S Z)))
+    [(Z,S (S (S Z))),(S Z,S (S Z)),(S (S Z),S Z),(S (S (S Z)),Z)]
+    *Invadd> map (uncurry add) $ inv_Fadd (S (S (S Z)))
+    [S (S (S Z)),S (S (S Z)),S (S (S Z)),S (S (S Z))]
+    *Invadd> :m +Data.List
+    *Invadd Data.List> nub $ map (uncurry add) $ inv_Fadd (S (S (S Z)))
+    [S (S (S Z))]
 
 
  How to build

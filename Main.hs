@@ -149,7 +149,8 @@ printOCode prog =
 printCode :: [H.Dec] -> Maybe String -> [String] -> (String,String) 
              -> IO ()
 printCode code modName imp (e1,e2) 
-    = do { putStrLn  "{-# OPTIONS -XNoMonomorphismRestriction #-}"
+    = do { putStrLn  "{-# LANGUAGE NoMonomorphismRestriction #-}"
+         ; putStrLn  "{-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}"
          ; (case modName of
               Just m  -> putStrLn $ "module " ++ m ++ " (" ++e1++","++e2++") where" 
               Nothing -> return () )

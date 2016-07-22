@@ -186,7 +186,7 @@ instance Pretty Type where
 instance Pretty Clause where
   pPrintPrec v k (SimpleClause ps e) =
     vcat [ hsep (map (pPrintPrec v 1) ps)
-         , nest 4 (text "=" <+> pPrintPrec v 0 e) ]
+         , (text "=" <+> pPrintPrec v 0 e) ]
 
 instance Pretty Pat where
   pPrintPrec v k (VarP p)     = pPrint p 
@@ -222,7 +222,7 @@ instance Pretty Exp where
       _ ->
         parens (pPrintPrec v 20 e1 <+> pPrintPrec v 20 e2 <+> pPrintPrec v 20 e3) 
   pPrintPrec v k (TupE es) =
-    parens (hsep $ punctuate comma $ map (pPrintPrec v 0) es)
+    parens (sep $ punctuate comma $ map (pPrintPrec v 0) es)
   pPrintPrec v k (DoE ss) =
     ifParens (k > 0) $ 
     text "do" <+> 

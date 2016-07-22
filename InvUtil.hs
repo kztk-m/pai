@@ -1,11 +1,15 @@
 module InvUtil 
     (
      (>=>), I(..), 
-     checkEq, checkEqPrim, fixApp, Default, something, mymplus, mymzero
+     checkEq, checkEqPrim, fixApp, Default, something, mymplus, mymzero, S, runS
     ) where 
 
+import Control.Monad.SearchTree
 -- import Control.Monad ()
-import Control.Monad ( (>=>), liftM, liftM2, liftM3, mplus, mzero )                     
+import Control.Monad ( (>=>), liftM, liftM2, liftM3, mplus, mzero )
+import Control.Monad (MonadPlus)
+import Control.Applicative (Alternative, empty, (<|>))
+           
                
 class Default a where
     something :: a 
@@ -64,13 +68,60 @@ fixApp a y =
     let f x y = x y `mplus` f (a >=> x) y
     in f return y
 
+newtype S a = S {unS :: Search a}
+
+instance Functor S where
+  fmap f = S . fmap f . unS 
+
+instance Applicative S where
+  pure = S . pure 
+  S f <*> S a = S (f <*> a)
+
+instance Monad S where
+  return = pure
+  S m >>= f = S (m >>= unS . f)
+
+instance Alternative S where
+  empty       = S empty
+  S a <|> S b = S (a <|> b)
+
+instance MonadPlus S where
+  mzero             = S mzero
+  mplus (S a) (S b) = S (mplus a b) 
+
+instance Show a => Show (S a) where
+  show = show . runS 
+  
 -- Currently, these functions are less polymorphic 
--- because typing issue.
-mymplus :: [a] -> [a] -> [a]
+-- because of typing issue.
+mymplus :: S a -> S a -> S a
 mymplus = mplus 
 
-mymzero :: [a]
+mymzero :: S a 
 mymzero = mzero
+
+
+runS :: S a -> [a]
+runS = runRaw . searchTree . unS 
+
+runRaw :: SearchTree a -> [a]
+runRaw x = rs step
+  where
+    step = 100 
+    rs n = case idfs n x [] False of
+      (r, False) -> r
+      (r, True)  -> r ++ rs (n+step)
+
+    idfs 0 x    r _ = (r, True)
+    idfs n None r b = (r, b)
+    idfs n (One a) r b = if n <= step then
+                             (a:r, b)
+                           else
+                             (r, b) 
+    idfs n (Choice x1 x2) r b =
+      uncurry (idfs (n-1) x1) (idfs (n-1) x2 r b)
+
+
 
 -- zeroPossibility = []
 -- addPossibility [] ys = ys
