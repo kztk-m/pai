@@ -1,0 +1,9 @@
+/dist-newstyle/
+*.hi
+*.o
+/pai
+/pai.exe
+/Experiment
+/Experiment.exe
+/examples/*.hs
+/examples/*.gta
