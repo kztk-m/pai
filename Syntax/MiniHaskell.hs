@@ -1,7 +1,13 @@
+{-# LANGUAGE CPP #-}
+
 module Syntax.MiniHaskell where
 
 import Text.PrettyPrint as PP
 import Text.PrettyPrint.HughesPJClass as PP 
+
+#if MIN_VERSION_base(4,9,0)
+import           Prelude          hiding ((<>))
+#endif
 
 data Name = Name String
             deriving (Eq, Ord)

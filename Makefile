@@ -23,7 +23,13 @@ all : $(EXECUTABLE)
 
 $(EXECUTABLE) : $(HSSRC)
 	cabal build -j 
-	cp ./dist/build/PaI/PaI ./$(EXECUTABLE)
+	if [ -d ./dist-newstyle/ ]; then \
+		cp `find ./dist-newstyle -name 'PaI' -type f` ./$(EXECUTABLE); \
+	elif [ -d ./dist/ ]; then \
+		cp ./dist/build/PaI/PaI ./$(EXECUTABLE); \
+	else \
+		echo "Error: failed to find executable to copy"; \
+	fi 
 
 
 

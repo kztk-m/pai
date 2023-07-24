@@ -1,5 +1,7 @@
+{-# LANGUAGE CPP, DerivingStrategies #-}
+
 module InvUtil 
-       (
+    (
          (>=>), I(..), 
          checkEq, checkEqPrim, fixApp,
          Default(..),
@@ -10,7 +12,13 @@ import Control.Applicative (Alternative, empty, (<|>))
 import Control.Monad ( (>=>), liftM, liftM2, liftM3, mplus, mzero , MonadPlus)
 
 import Control.Monad.SearchTree
+import Data.Functor.Identity
 
+import Data.Coerce
+
+#if MIN_VERSION_base(4,9,0)
+import           Control.Monad.Fail
+#endif
   
 class Default a where
     something :: a 
@@ -29,33 +37,43 @@ instance (Default a, Default b, Default c) => Default (a,b,c) where
 instance Default a => Default (Either a b) where
     something = Left something
 
-
 newtype I x = I { runI :: x }
     deriving (Show)
 
 instance Functor I where
   {-# INLINE [1] fmap #-}
-  fmap f (I x) = I (f x)
+  fmap f = coerce f 
 
 instance Applicative I where
   {-# INLINE [1] pure #-}
-  pure = I
+  pure = coerce
 
   {-# INLINE [1] (<*>) #-}
   I f <*> I x = I (f x)
 
 instance Monad I where 
     {-# INLINE [1] return #-}
-    return        = I
+    return        = pure 
     {-# INLINE [1] (>>=) #-}
     (>>=) (I x) f = f x
+
+#if MIN_VERSION_base(4,9,0)
+instance MonadFail I where 
     {-# INLINE [1] fail #-}
     fail x = error x
+#else 
+    {-# INLINE [1] fail #-}
+    fail x = error x
+#endif     
 
 {-# INLINABLE[2] checkEq #-}
 {-# SPECIALIZE INLINE [2] checkEq :: Eq a => S a -> S a -> S a #-}
 {-# SPECIALIZE INLINE [2] checkEq :: Eq a => I a -> I a -> I a #-}
+#if MIN_VERSION_base(4,9,0)
+checkEq :: (MonadFail m,Eq a) => m a -> m a -> m a 
+#else
 checkEq :: (Monad m,Eq a) => m a -> m a -> m a 
+#endif
 checkEq x y =
     do { a <- x 
        ; b <- y 
@@ -64,34 +82,49 @@ checkEq x y =
 {-# INLINABLE  checkEqPrim #-}
 {-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> S a #-}
 {-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> I a #-}
+#if MIN_VERSION_base(4,9,0)
+checkEqPrim :: (MonadFail m, Eq a) => a -> a -> m a 
+#else
 checkEqPrim :: (Monad m, Eq a) => a -> a -> m a 
+#endif 
 checkEqPrim a b | a == b = return a 
-                | True   = fail $ "Incosistency Found"
+                | True   = fail $ "Inconsistency Found"
                 
 fixApp a y = 
     let f x y = x y `mplus` f (a >=> x) y
     in f return y
 
 newtype S a = S {unS :: Search a}
+  deriving newtype Functor 
+  deriving newtype Applicative
+  deriving newtype Monad 
+  deriving newtype Alternative 
+  deriving newtype MonadPlus 
 
-instance Functor S where
-  fmap f = S . fmap f . unS 
 
-instance Applicative S where
-  pure = S . pure 
-  S f <*> S a = S (f <*> a)
+-- instance Functor S where
+--   fmap f = S . fmap f . unS 
 
-instance Monad S where
-  return = pure
-  S m >>= f = S (m >>= unS . f)
+-- instance Applicative S where
+--   pure = S . pure 
+--   S f <*> S a = S (f <*> a)
 
-instance Alternative S where
-  empty       = S empty
-  S a <|> S b = S (a <|> b)
+-- instance Monad S where
+--   return = pure
+--   S m >>= f = S (m >>= unS . f)
 
-instance MonadPlus S where
-  mzero             = S mzero
-  mplus (S a) (S b) = S (mplus a b) 
+#if MIN_VERSION_base(4,9,0)
+instance MonadFail S where 
+  fail = S . fail 
+#endif 
+
+-- instance Alternative S where
+--   empty       = S empty
+--   S a <|> S b = S (a <|> b)
+
+-- instance MonadPlus S where
+--   mzero             = S mzero
+--   mplus (S a) (S b) = S (mplus a b) 
 
 instance Show a => Show (S a) where
   show = show . runS 

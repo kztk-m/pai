@@ -9,7 +9,7 @@ FILES
 How to Generate Inverse
 -----------------------
 
-    $ ../pai -i MyData -m RUNLENGTH8 -f runlength8.txt 
+    $ ../pai -i MyData -m RUNLENGTH8 -f runlength8.txt > RUNLENGTH8.hs 
 
 Then, `RUNLENGTH8.hs` has been generated. 
 
@@ -34,7 +34,7 @@ Demonstration
     $ diff test.bmp test_r.bmp 
 
 Make sure that you must delete generated files before and/or after the
-demostration.
+demonstration by `./cleanup.sh`
 
 
 

@@ -1,37 +1,45 @@
+{-# LANGUAGE CPP #-}
+
 module Main where
 
-import Syntax.Concrete
-import Syntax.Abstract
-import TreeAutomata.Guided
-import Inverter
-import Inverter.Action
-import Inverter.Build
-import Inverter.CodeGen
+import           Inverter
+import           Inverter.Action
+import           Inverter.Build
+import           Inverter.CodeGen
+import           Syntax.Abstract
+import           Syntax.Concrete
+import           TreeAutomata.Guided
 
-import Util 
+import           Util
 
-import Control.Monad.State
+import           Control.Monad.State
 
-import Data.List
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Maybe 
-import Data.Function (on)
-import Data.Char 
+import           Data.Char
+import           Data.Function       (on)
+import           Data.List
+import           Data.Map            (Map)
+import qualified Data.Map            as Map
+import           Data.Maybe
 
-import Text.PrettyPrint 
-import Debug.Trace
+import           Debug.Trace
+import           Text.PrettyPrint
 
-import System.IO
-import System.Environment
-import System.CPUTime
-import Text.Printf
+import           System.CPUTime
+import           System.Environment
+import           System.IO
+import           Text.Printf
 
 -- import qualified Language.Haskell.TH as TH
 
-import qualified Syntax.MiniHaskell as H 
--- 
--- Main function 
+import qualified Syntax.MiniHaskell  as H
+
+
+#if MIN_VERSION_base(4,9,0)
+import           Prelude             hiding ((<>))
+#endif
+
+--
+-- Main function
 --
 
 main :: IO ()
@@ -39,20 +47,20 @@ main = do { args <- getArgs
           ; let conf = parseArgs args defaultConfig
           ; starttime <- getCPUTime
           ; csterr <- case inputFile conf of
-                        Nothing -> 
+                        Nothing ->
                           do cont <- getContents
                              return $ parseString cont
                         Just filename ->
                              parseFile filename
           ; case csterr of
-              Right cprog -> 
+              Right cprog ->
                do let (prog, imap, ta, gtaMap, ambi, code) = invert cprog
-                  when (debugMode conf) $ debugInfo (prog, ta, gtaMap) 
+                  when (debugMode conf) $ debugInfo (prog, ta, gtaMap)
                   putStrLnE $ showAmbiInfo imap ambi
                   let entries = (show $ head [ f | H.FunD f _   <- code ],
                                  show $ head [ f | Decl _ f _ _ <- decls prog])
                   printCode code (moduleName conf) (extraImport conf) entries
-                  printOCode prog 
+                  printOCode prog
               Left err -> hPutStrLn stderr (show err)
           ; endtime  <- getCPUTime
           ; when (showElapsedMode conf) (hPrintf stderr "-- %0.2f seconds is elapsed.\n" ( (fromIntegral (endtime - starttime)/(10^12) )::Double ))
@@ -65,13 +73,13 @@ showAmbiInfo imap (Just (foverlaps, eoverlaps)) = render $
    ptext "System failed to prove the injectivity because of following reasons: " $$
    vcat (map ppfo foverlaps) $$
    vcat (map ppeo eoverlaps)
-  where ppfo (n1,n2) = 
+  where ppfo (n1,n2) =
           ptext "Possibly range-overlapping functions: " $$
                     nest 4 (ppr n1 <> comma <> ppr n2)
-        ppeo (i1,i2) = 
+        ppeo (i1,i2) =
           ptext "Possibly range-overlapping expressions: " $$
             nest 4 (pprl i1 imap) $$
-            nest 4 (pprl i2 imap) 
+            nest 4 (pprl i2 imap)
         pprl e imap =
           case Map.lookup e imap of
             Just (span,str) ->
@@ -85,30 +93,30 @@ showAmbiInfo imap (Just (foverlaps, eoverlaps)) = render $
                        nest 4 str
                    else
                        ptext "unknown location"
-          
+
 putStrLnE = hPutStrLn stderr
-                      
-data Config 
-    = Config 
-      { 
-        extraImport :: [String],     -- ^ Modules to be imported in the generated code
-        inputFile   :: Maybe String, -- ^ Path to input file
-        debugMode   :: Bool,         -- ^ Print debug message 
-        helpMode    :: Bool,         -- ^ NOT IMPLEMENTED
+
+data Config
+    = Config
+      {
+        extraImport     :: [String],     -- ^ Modules to be imported in the generated code
+        inputFile       :: Maybe String, -- ^ Path to input file
+        debugMode       :: Bool,         -- ^ Print debug message
+        helpMode        :: Bool,         -- ^ NOT IMPLEMENTED
         showElapsedMode :: Bool,     -- ^ Show Elapsed Time
-        moduleName  :: Maybe String -- ^ Module Name for generated code
+        moduleName      :: Maybe String -- ^ Module Name for generated code
       }
-defaultConfig = Config { 
-                  extraImport = [], 
-                  inputFile = Nothing, 
+defaultConfig = Config {
+                  extraImport = [],
+                  inputFile = Nothing,
                   debugMode = False,
                   helpMode  = False,
                   showElapsedMode = False,
                   moduleName = Nothing }
 
-parseArgs :: [[Char]] -> Config -> Config 
+parseArgs :: [[Char]] -> Config -> Config
 parseArgs args conf =
-    case args of 
+    case args of
       ("-i":x:xs) ->
           parseArgs xs (conf { extraImport = x:(extraImport conf) })
       ("-f":x:xs) ->
@@ -128,54 +136,54 @@ parseArgs args conf =
       [] ->
           conf
     where
-      makeM file conf = 
+      makeM file conf =
           case moduleName conf of
             Nothing -> conf { moduleName = makeModName file }
-            _       -> conf 
+            _       -> conf
       makeModName file =
           let fileName = reverse (takeWhile (/= '/') $ reverse file)
-              fileBody = takeWhile (/= '.') fileName 
+              fileBody = takeWhile (/= '.') fileName
           in if length fileBody > 0 &&
                 all (\x -> isAsciiLower x || isAsciiUpper x || isNumber x) fileBody then
-                 Just $ "Inv" ++ fileBody 
+                 Just $ "Inv" ++ fileBody
              else
                  Nothing
-                 
+
 printOCode :: Prog -> IO ()
-printOCode prog = 
+printOCode prog =
     putStrLn $ H.pprint (ast2hs prog)
 
 
-printCode :: [H.Dec] -> Maybe String -> [String] -> (String,String) 
+printCode :: [H.Dec] -> Maybe String -> [String] -> (String,String)
              -> IO ()
-printCode code modName imp (e1,e2) 
+printCode code modName imp (e1,e2)
     = do { putStrLn  "{-# LANGUAGE NoMonomorphismRestriction #-}"
          ; putStrLn  "{-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}"
          ; (case modName of
-              Just m  -> putStrLn $ "module " ++ m ++ " (" ++e1++","++e2++") where" 
+              Just m  -> putStrLn $ "module " ++ m ++ " (" ++e1++","++e2++") where"
               Nothing -> return () )
          ; putStrLn  "import Control.Monad"
 --         ; putStrLn  "import MyData\n"
          ; putStrLn  "import InvUtil\n"
-         ; putStrLn  "import Data.Tuple\n" 
-         ; mapM_ putStrLn [ "import " ++ v | v <- imp ]                
+         ; putStrLn  "import Data.Tuple\n"
+         ; mapM_ putStrLn [ "import " ++ v | v <- imp ]
          ; putStrLn (H.pprint code ) }
 
 
 {- for debugging?
-afterEps p = render $ ppr $ 
+afterEps p = render $ ppr $
               let (a,b,c) = fromProgramToTA p
               in (eliminateEps a,b,c)
 -}
-       
+
 -- debugging options
 
 -- debugInfo :: Prog -> IO ()
 debugInfo (prog, ta, gta)  =
   do putStrLnE "--- Abstract Syntax Tree ------------------------"
-     putStrLnE $ show prog 
+     putStrLnE $ show prog
      putStrLnE "--- Tree Automata -------------------------------"
      putStrLnE $ render $ ppr $ ta
      putStrLnE "--- Guided Tree Automata ------------------------"
-     putStrLnE $ render $ ppr $ gta 
--- was     putStrLnE $ render $ ppr $ testGTA ast 
+     putStrLnE $ render $ ppr $ gta
+-- was     putStrLnE $ render $ ppr $ testGTA ast

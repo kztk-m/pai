@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- | Tree Automata
 module TreeAutomata.Automata (
   TA(..),                    --  tree automata 
@@ -29,6 +31,10 @@ import Text.PrettyPrint
 import Util
 
 import Debug.Trace
+
+#if MIN_VERSION_base(4,9,0)
+import           Prelude          hiding ((<>))
+#endif
 
 newtype TA state name action 
     = TA (Map (Symbol name) [Tr state action]) 
@@ -63,7 +69,7 @@ isEpsS _      = False
 states :: Ord state => TA state name action -> [state]
 states (TA tMap) = 
     Set.toList $
-       Map.fold (\trs s -> 
+       Map.foldr (\trs s -> 
                      foldr (\tr s ->
                                 Set.fromList (dst tr:src tr) `Set.union` s)
                            s trs)

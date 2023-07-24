@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Util where
 
 import Text.PrettyPrint 
@@ -9,6 +10,11 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 import Data.Maybe (fromJust)
+
+#if MIN_VERSION_base(4,9,0)
+import           Prelude          hiding ((<>))
+#endif
+
 
 class Ppr p where
     ppr :: p -> Doc
