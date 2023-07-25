@@ -32,10 +32,8 @@ original programming language, and produces a Haskell code of its inverse.
     (Cons 1 (Cons 2 Nil),3)
 
 
-For non-injective fucntion, 
-the system can generate a right inverse that enumerates 
+For non-injective function, the system can generate a right inverse that enumerates 
 possible corresponding inputs.
-
 
 
     $ cat examples/add.txt
@@ -57,26 +55,25 @@ possible corresponding inputs.
     *Invadd> :t add
     add :: Nat -> Nat -> Nat
     *Invadd> :t inv_Fadd
-    inv_Fadd :: Nat -> [(Nat,Nat)]
+    inv_Fadd :: Nat -> S (Nat,Nat)
     *Invadd> add (S Z) (S (S Z))
     S (S (S Z))
     *Invadd> inv_Fadd (S (S (S Z)))
     [(Z,S (S (S Z))),(S Z,S (S Z)),(S (S Z),S Z),(S (S (S Z)),Z)]
-    *Invadd> map (uncurry add) $ inv_Fadd (S (S (S Z)))
+    *Invadd> uncurry add <$> inv_Fadd (S (S (S Z)))
     [S (S (S Z)),S (S (S Z)),S (S (S Z)),S (S (S Z))]
     *Invadd> :m +Data.List
-    *Invadd Data.List> nub $ map (uncurry add) $ inv_Fadd (S (S (S Z)))
+    *Invadd Data.List> nub $ runS $ uncurry add <$> inv_Fadd (S (S (S Z)))
     [S (S (S Z))]
 
 
  How to build
 --------------
-   0. Install [GHC] over 6.8.2.
-   1. Download tar file: [pai.tar.gz](./pai.tar.gz)
-   2. Unpack the tar file: `tar zxvf pai.tar.gz`
-   3. `make`
-     - In case of trouble, please edit make file to fix the problem.
-     - `pai` (or, `pai.exe` in Windows) is the name of the program inverter
+   0. Install [GHC] over 8.6.
+   1. Clone [the `pai` repository](https://bitbucket.org/kztk/pai-git/), and `cd` to the repo.
+   2. `make`
+     - In case of trouble, please edit `Makefile` to resolve the problem.
+     - `pai` (or, `pai.exe` in Windows) is the name of the program inverter generated.
      - Directory `examples` contains some examples.
      - `MyData.hs` contains data declarations for the examples.
      - `InvUtil.hs` contains function defintions used in the generated inverses.
