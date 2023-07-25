@@ -1,5 +1,6 @@
-{-# LANGUAGE UndecidableInstances, MultiParamTypeClasses, FlexibleInstances, IncoherentInstances #-}
+{-# LANGUAGE UndecidableInstances, MultiParamTypeClasses, FlexibleInstances #-}
 
+{-# OPTIONS_GHC -Wno-inline-rule-shadowing #-}
 
 module MyData where
 

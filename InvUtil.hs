@@ -1,27 +1,30 @@
-{-# LANGUAGE CPP, DerivingStrategies #-}
+{-# LANGUAGE CPP                #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# OPTIONS_GHC -Wno-inline-rule-shadowing #-}
 
-module InvUtil 
+module InvUtil
     (
-         (>=>), I(..), 
+         (>=>), I(..),
          checkEq, checkEqPrim, fixApp,
          Default(..),
          mymplus, mymzero, S, runS
-    ) where 
+    ) where
 
-import Control.Applicative (Alternative, empty, (<|>))
-import Control.Monad ( (>=>), liftM, liftM2, liftM3, mplus, mzero , MonadPlus)
+import           Control.Applicative      (Alternative, empty, (<|>))
+import           Control.Monad            (MonadPlus, liftM, liftM2, liftM3,
+                                           mplus, mzero, (>=>))
 
-import Control.Monad.SearchTree
-import Data.Functor.Identity
+import           Control.Monad.SearchTree
+import           Data.Functor.Identity
 
-import Data.Coerce
+import           Data.Coerce
 
 #if MIN_VERSION_base(4,9,0)
 import           Control.Monad.Fail
 #endif
-  
+
 class Default a where
-    something :: a 
+    something :: a
 
 instance Default Int        where { something = 0 }
 instance Default Integer    where { something = 0 }
@@ -42,7 +45,7 @@ newtype I x = I { runI :: x }
 
 instance Functor I where
   {-# INLINE [1] fmap #-}
-  fmap f = coerce f 
+  fmap f = coerce f
 
 instance Applicative I where
   {-# INLINE [1] pure #-}
@@ -51,62 +54,62 @@ instance Applicative I where
   {-# INLINE [1] (<*>) #-}
   I f <*> I x = I (f x)
 
-instance Monad I where 
+instance Monad I where
     {-# INLINE [1] return #-}
-    return        = pure 
+    return        = pure
     {-# INLINE [1] (>>=) #-}
     (>>=) (I x) f = f x
 
 #if MIN_VERSION_base(4,9,0)
-instance MonadFail I where 
+instance MonadFail I where
     {-# INLINE [1] fail #-}
     fail x = error x
-#else 
+#else
     {-# INLINE [1] fail #-}
     fail x = error x
-#endif     
+#endif
 
 {-# INLINABLE[2] checkEq #-}
 {-# SPECIALIZE INLINE [2] checkEq :: Eq a => S a -> S a -> S a #-}
 {-# SPECIALIZE INLINE [2] checkEq :: Eq a => I a -> I a -> I a #-}
 #if MIN_VERSION_base(4,9,0)
-checkEq :: (MonadFail m,Eq a) => m a -> m a -> m a 
+checkEq :: (MonadFail m,Eq a) => m a -> m a -> m a
 #else
-checkEq :: (Monad m,Eq a) => m a -> m a -> m a 
+checkEq :: (Monad m,Eq a) => m a -> m a -> m a
 #endif
 checkEq x y =
-    do { a <- x 
-       ; b <- y 
+    do { a <- x
+       ; b <- y
        ; checkEqPrim a b }
 
 {-# INLINABLE  checkEqPrim #-}
 {-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> S a #-}
 {-# SPECIALIZE INLINE [2] checkEqPrim :: Eq a => a -> a -> I a #-}
 #if MIN_VERSION_base(4,9,0)
-checkEqPrim :: (MonadFail m, Eq a) => a -> a -> m a 
+checkEqPrim :: (MonadFail m, Eq a) => a -> a -> m a
 #else
-checkEqPrim :: (Monad m, Eq a) => a -> a -> m a 
-#endif 
-checkEqPrim a b | a == b = return a 
+checkEqPrim :: (Monad m, Eq a) => a -> a -> m a
+#endif
+checkEqPrim a b | a == b = return a
                 | True   = fail $ "Inconsistency Found"
-                
-fixApp a y = 
+
+fixApp a y =
     let f x y = x y `mplus` f (a >=> x) y
     in f return y
 
 newtype S a = S {unS :: Search a}
-  deriving newtype Functor 
+  deriving newtype Functor
   deriving newtype Applicative
-  deriving newtype Monad 
-  deriving newtype Alternative 
-  deriving newtype MonadPlus 
+  deriving newtype Monad
+  deriving newtype Alternative
+  deriving newtype MonadPlus
 
 
 -- instance Functor S where
---   fmap f = S . fmap f . unS 
+--   fmap f = S . fmap f . unS
 
 -- instance Applicative S where
---   pure = S . pure 
+--   pure = S . pure
 --   S f <*> S a = S (f <*> a)
 
 -- instance Monad S where
@@ -114,9 +117,9 @@ newtype S a = S {unS :: Search a}
 --   S m >>= f = S (m >>= unS . f)
 
 #if MIN_VERSION_base(4,9,0)
-instance MonadFail S where 
-  fail = S . fail 
-#endif 
+instance MonadFail S where
+  fail = S . fail
+#endif
 
 -- instance Alternative S where
 --   empty       = S empty
@@ -124,16 +127,16 @@ instance MonadFail S where
 
 -- instance MonadPlus S where
 --   mzero             = S mzero
---   mplus (S a) (S b) = S (mplus a b) 
+--   mplus (S a) (S b) = S (mplus a b)
 
 instance Show a => Show (S a) where
-  show = show . runS 
-  
--- Currently, these functions are less polymorphic 
+  show = show . runS
+
+-- Currently, these functions are less polymorphic
 -- because of typing issue.
 {-# INLINE mymplus #-}
 mymplus :: S a -> S a -> S a
-mymplus = mplus 
+mymplus = mplus
 
 {-# INLINE mymzero #-}
 mymzero :: S a
@@ -141,12 +144,12 @@ mymzero = mzero
 
 
 runS :: S a -> [a]
-runS = runRaw . searchTree . unS 
+runS = runRaw . searchTree . unS
 
 runRaw :: SearchTree a -> [a]
 runRaw x = rs step
   where
-    step = 100 
+    step = 100
     rs n = case idfs n x [] False of
       (r, False) -> r
       (r, True)  -> r ++ rs (n+step)
@@ -156,7 +159,7 @@ runRaw x = rs step
     idfs n (One a) r b = if n <= step then
                              (a:r, b)
                            else
-                             (r, b) 
+                             (r, b)
     idfs n (Choice x1 x2) r b =
       uncurry (idfs (n-1) x1) (idfs (n-1) x2 r b)
 
@@ -166,7 +169,7 @@ runRaw x = rs step
   #-}
 
 {-# RULES
-"return2"  forall f x y. return (x,y) >>= (\(a,b) -> f a b) = f x y 
+"return2"  forall f x y. return (x,y) >>= (\(a,b) -> f a b) = f x y
   #-}
 
 {-# RULES
