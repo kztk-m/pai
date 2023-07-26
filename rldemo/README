@@ -4,7 +4,7 @@ FILES
   * README.        This document. 
   * runlength8.txt An implementation of run-length compression. 
   * RLMain.hs      Haskell program that use the generated inverse of runlength8.txt.
-  * test.bmp       A raw-bitmap file to compress. 
+  * orig.bmp       A raw-bitmap file to compress. 
 
 How to Generate Inverse
 -----------------------
@@ -23,15 +23,15 @@ This may take a time.
 Demonstration 
 -------------
 
-    $ display test.bmp # Or, open if you are using Mac. 
-    $ ./RLMain encode test.bmp test_out
-    $ ls -lh test*
+    $ display orig.bmp # Or, open if you are using Mac. 
+    $ ./RLMain encode orig.bmp test_out
+    $ ls -lht 
     ...
-    $ ./RLMain decode test_out test_r.bmp
-    $ ls -lh test* 
+    $ ./RLMain decode test_out new.bmp
+    $ ls -lht 
     ... 
-    $ display test_r.bmp # Or, open if you are using Mac. 
-    $ diff test.bmp test_r.bmp 
+    $ display new.bmp # Or, open if you are using Mac. 
+    $ diff orig.bmp new.bmp 
 
 Make sure that you must delete generated files before and/or after the
 demonstration by `./cleanup.sh`
