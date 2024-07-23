@@ -4,10 +4,10 @@ Instructions
 FILES
 -----
 
-* README.        This document. 
-* runlength8.txt An implementation of run-length compression. 
-* RLMain.hs      Haskell program that use the generated inverse of runlength8.txt.
-* orig.bmp       A raw-bitmap file to compress. 
+* `README.md`      This document.
+* `runlength8.txt` An implementation of run-length compression.
+* `RLMain.hs`      Haskell program that uses the inverse generated from `runlength8.txt`.
+* `orig.bmp`       A raw-bitmap file to compress.
 
 How to Generate Inverse
 -----------------------
