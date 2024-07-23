@@ -1,18 +1,12 @@
  `PaI`: A System for Grammar-based Program Inversion
 =======================================================
 
-
-What is this?
+What is This?
 -------------
 
-This is an implementation of the paper 
-"Grammar-based Approach to Invertible Programs" 
-written by Kazutaka Matsuda et al.
+This is an implementation of the paper "A Grammar-based Approach to Invertible Programs" written by Kazutaka Matsuda et al.
 
-The program takes a input program written in a
-original programming language, and produces a Haskell code of its inverse.
-
-
+The program takes an input program written in a first-order functional programming language, and produces a Haskell code of its inverse.
 
     $ cat examples/snoc.txt
     snoc(Nil,y)       = Cons(y,Nil)
@@ -31,10 +25,7 @@ original programming language, and produces a Haskell code of its inverse.
     *Invsnoc> inv_Fsnoc (Cons 1 (Cons 2 (Cons 3 Nil)))
     (Cons 1 (Cons 2 Nil),3)
 
-
-For non-injective function, the system can generate a right inverse that enumerates 
-possible corresponding inputs.
-
+For non-injective function, the system can generate a right inverse that enumerates possible corresponding inputs.
 
     $ cat examples/add.txt
     -- Noninjective program but linear & treeless
@@ -66,22 +57,24 @@ possible corresponding inputs.
     *Invadd Data.List> nub $ runS $ uncurry add <$> inv_Fadd (S (S (S Z)))
     [S (S (S Z))]
 
-
- How to build
+How to build
 --------------
-   0. Install [GHC] over 8.6.
-   1. Clone [the `pai` repository](https://bitbucket.org/kztk/pai-git/), and `cd` to the repo.
-   2. `make`
+
+
+   1. Install [GHC] over 8.6. (Recommended: use [GHCup]).
+   2. Clone [the `pai` repository](https://github.com/kztk-m/pai), and `cd` to the repo.
+   3. `make`
      - In case of trouble, please edit `Makefile` to resolve the problem.
-     - `pai` (or, `pai.exe` in Windows) is the name of the program inverter generated.
+     - `PaI` (or, `PaI.exe` in Windows) is the name of the program inverter generated.
      - Directory `examples` contains some examples.
      - `MyData.hs` contains data declarations for the examples.
-     - `InvUtil.hs` contains function defintions used in the generated inverses.
+     - `InvUtil.hs` contains function definitions used in the generated inverses.
 
-[GHC]: http://www.haskell.org/ghc/    
+[GHC]: http://www.haskell.org/ghc/
+[GHCup]: https://www.haskell.org/ghcup/
 
- Options of `pai`
-------------------
+Options of `PaI`
+----------------
 
 `-i MODULE_NAME`
 :    It inserts "import MODULE_NAME" to a generated inverse program.
@@ -119,12 +112,8 @@ possible corresponding inputs.
     VarName = [a-z] [a-zA-Z0-9_]*
     ConName = [A-Z] [a-zA-Z0-9_]*
 
+Limitations & Known Issues
+--------------------------
 
- Limitations & Known Issues
------------------------------
-
-  * The derived code may not accept a value in the range of 
-    original function if the ambiguity test does not succeed.
-
-
-
+* The derived code may not accept a value in the range of an
+  original function if the ambiguity test does not succeed.
