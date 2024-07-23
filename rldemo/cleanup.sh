@@ -7,4 +7,3 @@ rm -f *.o
 rm -f RUNLENGTH8.hs
 rm -f test_out
 rm -f new.bmp 
- 
