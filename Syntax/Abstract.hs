@@ -14,6 +14,7 @@ module Syntax.Abstract
 
 import           Util
 
+import           Control.Monad       (zipWithM)
 import           Control.Monad.State
 import           Data.Function       (on)
 import           Data.List

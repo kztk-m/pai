@@ -12,6 +12,7 @@ import           TreeAutomata.Guided
 
 import           Util
 
+import           Control.Monad (when)
 import           Control.Monad.State
 
 import           Data.Char

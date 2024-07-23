@@ -24,6 +24,7 @@ import Data.List
 import Data.Monoid hiding ((<>))
 import Data.Function (on)
 
+import Control.Monad (mzero, mplus)
 import Control.Monad.State hiding (mapState)
 
 import Text.PrettyPrint 
