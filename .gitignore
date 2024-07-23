@@ -1,8 +1,8 @@
 /dist-newstyle/
 *.hi
 *.o
-/pai
-/pai.exe
+/PaI
+/PaI.exe
 /Experiment
 /Experiment.exe
 /examples/*.hs

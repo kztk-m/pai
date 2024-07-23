@@ -4,7 +4,7 @@ HSOPTS_ARC =
 HSOPTS_EXP = $(HSOPTS) $(HSOPTSC) # -ddump-simpl-stats 
 
 TOP = .
-EXECUTABLE = $(TOP)/pai
+EXECUTABLE = $(TOP)/PaI
 EXAMPLE_DIR = $(TOP)/examples
 EXAMPLE_SUFFIX = txt
 EXAMPLES = $(shell ls $(EXAMPLE_DIR)/*.$(EXAMPLE_SUFFIX))
@@ -21,15 +21,16 @@ HSSRC = $(shell find ./ -name "*.hs")
 all : $(EXECUTABLE) 
 
 
-$(EXECUTABLE) : $(HSSRC)
+$(EXECUTABLE) : 
 	cabal build -j 
-	if [ -d ./dist-newstyle/ ]; then \
-		cp `find ./dist-newstyle -name 'PaI' -type f` ./$(EXECUTABLE); \
-	elif [ -d ./dist/ ]; then \
-		cp ./dist/build/PaI/PaI ./$(EXECUTABLE); \
-	else \
-		echo "Error: failed to find executable to copy"; \
-	fi 
+	cabal install --installdir=$(TOP) --install-method=copy --overwrite-policy=always
+	# if [ -d ./dist-newstyle/ ]; then \
+	# 	cp `find ./dist-newstyle -name 'PaI' -type f` ./$(EXECUTABLE); \
+	# elif [ -d ./dist/ ]; then \
+	# 	cp ./dist/build/PaI/PaI ./$(EXECUTABLE); \
+	# else \
+	# 	echo "Error: failed to find executable to copy"; \
+	# fi 
 
 
 
@@ -41,7 +42,7 @@ example : $(EXECUTABLE)
 	   mn=`echo $${fn%\.*} | tr "[a-z]" "[A-Z]"`; \
 	   hs="$${mn}.hs"; \
 	   gta="$${mn}.gta"; \
-	   ./pai -t -d $${f%\.*}.$(EXAMPLE_SUFFIX) -m $${mn} -i MyData > $(EXAMPLE_DIR)/$${hs} 2> $(EXAMPLE_DIR)/$${gta} ; \
+	   $(EXECUTABLE) -t -d $${f%\.*}.$(EXAMPLE_SUFFIX) -m $${mn} -i MyData > $(EXAMPLE_DIR)/$${hs} 2> $(EXAMPLE_DIR)/$${gta} ; \
 	   tail -1 $(EXAMPLE_DIR)/$${gta}; \
 	done
 
@@ -56,7 +57,7 @@ time : $(EXECUTABLE)
 	for f in $(EXAMPLES); \
 	do \
 		echo $${f%\.*}; \
-		time ./pai $${f%\.*}.$(EXAMPLE_SUFFIX) > /dev/null;  \
+		time $(EXECUTABLE) $${f%\.*}.$(EXAMPLE_SUFFIX) > /dev/null;  \
 		echo "\n\n"; \
 	done
 
